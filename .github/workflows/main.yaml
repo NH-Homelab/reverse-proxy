@@ -1,0 +1,22 @@
+name: Deploy Base Kustomization
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+      - name: Apply base kustomization
+        run: |
+          kubectl apply -k ./
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
