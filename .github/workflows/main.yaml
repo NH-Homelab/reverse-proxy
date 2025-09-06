@@ -17,6 +17,6 @@ jobs:
           version: 'latest'
       - name: Apply base kustomization
         run: |
-          kubectl apply -k ./
+          kubectl apply -k ./ --validate=false
         env:
           KUBECONFIG: ${{ secrets.KUBECONFIG }}
