@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: nginx-container
-        image: ghcr.io/nh-homelab/nginx-custom:latest
+        image: ghcr.io/nh-homelab/reverse-proxy:latest
       imagePullSecrets:
       - name: ghcr-creds
