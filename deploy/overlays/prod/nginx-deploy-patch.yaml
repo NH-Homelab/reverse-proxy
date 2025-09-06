@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    spec:
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: nginx-tls
+      containers:
+        - name: nginx-container
+          volumeMounts:
+            - name: tls-certs
+              mountPath: /etc/nginx/ssl
+              readOnly: true
+          # ...existing container config...
