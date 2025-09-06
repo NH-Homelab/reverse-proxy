@@ -16,21 +16,6 @@ spec:
     spec:
       containers:
       - name: nginx-container
-        image: nginx:latest
-        volumeMounts:
-        - name: nginx-config-files
-          mountPath: /etc/nginx
-        - name: nginx-services
-          mountPath: /etc/nginx/conf.d
-        - name: nginx-html
-          mountPath: /usr/share/nginx/html
-      volumes:
-      - name: nginx-config-files
-        configMap:
-          name: nginx-config-files
-      - name: nginx-html
-        configMap:
-          name: nginx-html
-      - name: nginx-services
-        configMap:
-          name: nginx-services
+        image: ghcr.io/nh-homelab/nginx-custom:latest
+      imagePullSecrets:
+      - name: ghcr-creds

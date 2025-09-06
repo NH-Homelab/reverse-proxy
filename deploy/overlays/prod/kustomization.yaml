@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../base
-
+  
 patches:
   - path: nginx-deploy-patch.yaml
     target:
