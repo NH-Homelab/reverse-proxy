@@ -1,5 +1,6 @@
 upstream minio {
-    server host.minikube.internal:9000;
+    zone minio 64k;
+    server ${MINIO_HOST}:${MINIO_PORT} resolve;
 }
 
 server {

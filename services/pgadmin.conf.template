@@ -1,5 +1,6 @@
 upstream pgadmin {
-    server host.minikube.internal:15433;
+    zone pgadmin 64k;
+    server ${PGADMIN_HOST}:${PGADMIN_PORT} resolve;
 }
 
 server {

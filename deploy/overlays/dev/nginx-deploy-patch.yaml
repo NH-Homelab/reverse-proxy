@@ -5,17 +5,9 @@ metadata:
 spec:
   template:
     spec:
-      volumes:
-        - name: tls-certs
-          secret:
-            secretName: nginx-tls
       containers:
-        
         - name: nginx-container
-          volumeMounts:
-            - name: tls-certs
-              mountPath: /etc/nginx/ssl
-              readOnly: true
+          image: nginx:local-test # Use your locally built image tag
           envFrom:
             - configMapRef:
                 name: nginx-env

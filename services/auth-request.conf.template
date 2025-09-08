@@ -1,0 +1,4 @@
+upstream auth-backend {
+    zone auth-backend 64k;
+    server ${AUTH_SERVICE_HOST}:${AUTH_SERVICE_PORT} resolve;
+}

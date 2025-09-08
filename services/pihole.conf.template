@@ -1,7 +1,16 @@
+upstream pihole {
+    zone pihole 64k;
+    server ${PIHOLE_HOST}:${PIHOLE_PORT} resolve;
+}
+
 server {
     include /etc/nginx/snippets/ssl-common.conf;
 
-    server_name proxmox.nicholashenley.com;
+    server_name pihole.nicholashenley.com;
+
+    location = / {
+	return 301 https://pihole.nicholashenley.com/admin/index.php;
+    }
 
     location / {
         auth_request /auth-request;
@@ -9,7 +18,7 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade"; 
-        proxy_pass https://proxmox.local:8006;
+        proxy_pass http://pihole;
 
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
