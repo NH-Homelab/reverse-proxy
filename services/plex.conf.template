@@ -9,7 +9,7 @@ server{
     server_name watch.nicholashenley.com;
 
     location = / {
-        redirect 302 /web;
+        return 302 /web;
     }
 
     location /web {
