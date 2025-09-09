@@ -9,7 +9,7 @@ server {
     server_name  pg.nicholashenley.com;
 
     location / {
-        auth_request /auth-request;
+        include /etc/nginx/snippets/auth-common.conf;
 
         proxy_pass http://pgadmin/;
         proxy_set_header Host $host;
