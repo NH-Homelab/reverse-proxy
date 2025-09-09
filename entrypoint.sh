@@ -1,13 +1,13 @@
 #!/bin/sh
 
 # Source environment variables from mounted secret file
-if [ -f /etc/nginx/.env ]; then
-    echo "Loading environment variables from /etc/nginx/.env"
+if [ -f deploy/overlays/prod/.env ]; then
+    echo "Loading environment variables from deploy/overlays/prod/.env"
     set -a  # automatically export all variables
-    . /etc/nginx/.env
+    . deploy/overlays/prod/.env
     set +a  # stop automatically exporting
 else
-    echo "Warning: /etc/nginx/.env not found, using existing environment variables"
+    echo "Warning: deploy/overlays/prod/.env not found, using existing environment variables"
 fi
 
 # Validate critical environment variables

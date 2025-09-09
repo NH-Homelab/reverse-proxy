@@ -41,19 +41,18 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Create .env file from secrets
         run: |
-          touch /etc/nginx/.env
-          echo "MINIO_HOST=${MINIO_HOST}" >> /etc/nginx/.env
-          echo "MINIO_PORT=${MINIO_PORT}" >> /etc/nginx/.env
-          echo "PGADMIN_HOST=${PGADMIN_HOST}" >> /etc/nginx/.env
-          echo "PGADMIN_PORT=${PGADMIN_PORT}" >> /etc/nginx/.env
-          echo "PLEX_HOST=${PLEX_HOST}" >> /etc/nginx/.env
-          echo "PLEX_PORT=${PLEX_PORT}" >> /etc/nginx/.env
-          echo "PIHOLE_HOST=${PIHOLE_HOST}" >> /etc/nginx/.env
-          echo "PIHOLE_PORT=${PIHOLE_PORT}" >> /etc/nginx/.env
-          echo "PROXMOX_HOST=${PROXMOX_HOST}" >> /etc/nginx/.env
-          echo "PROXMOX_PORT=${PROXMOX_PORT}" >> /etc/nginx/.env
-          echo "AUTH_SERVICE_HOST=${AUTH_SERVICE_HOST}" >> /etc/nginx/.env
-          echo "AUTH_SERVICE_PORT=${AUTH_SERVICE_PORT}" >> /etc/nginx/.env
+          echo "MINIO_HOST=${MINIO_HOST}" >> deploy/overlays/prod/.env
+          echo "MINIO_PORT=${MINIO_PORT}" >> deploy/overlays/prod/.env
+          echo "PGADMIN_HOST=${PGADMIN_HOST}" >> deploy/overlays/prod/.env
+          echo "PGADMIN_PORT=${PGADMIN_PORT}" >> deploy/overlays/prod/.env
+          echo "PLEX_HOST=${PLEX_HOST}" >> deploy/overlays/prod/.env
+          echo "PLEX_PORT=${PLEX_PORT}" >> deploy/overlays/prod/.env
+          echo "PIHOLE_HOST=${PIHOLE_HOST}" >> deploy/overlays/prod/.env
+          echo "PIHOLE_PORT=${PIHOLE_PORT}" >> deploy/overlays/prod/.env
+          echo "PROXMOX_HOST=${PROXMOX_HOST}" >> deploy/overlays/prod/.env
+          echo "PROXMOX_PORT=${PROXMOX_PORT}" >> deploy/overlays/prod/.env
+          echo "AUTH_SERVICE_HOST=${AUTH_SERVICE_HOST}" >> deploy/overlays/prod/.env
+          echo "AUTH_SERVICE_PORT=${AUTH_SERVICE_PORT}" >> deploy/overlays/prod/.env
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -89,7 +88,7 @@ jobs:
     - name: Create Kubernetes Secret from .env
       run: |
         kubectl create secret generic proxy-secret \
-          --from-file=.env=/etc/nginx/.env \
+          --from-file=.env=deploy/overlays/prod/.env \
           --dry-run=client -o yaml > deploy/overlays/prod/secret.yaml
     - name: Apply base kustomization
       run: |
