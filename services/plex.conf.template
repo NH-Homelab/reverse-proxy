@@ -34,7 +34,7 @@ server{
     location / {
         include /etc/nginx/snippets/auth-common.conf;
 
-        proxy_pass $plex;
+        proxy_pass http://plex;
     }
 
     include /etc/nginx/snippets/auth-request.conf;
