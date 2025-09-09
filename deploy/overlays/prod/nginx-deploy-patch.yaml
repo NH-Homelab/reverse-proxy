@@ -21,6 +21,6 @@ spec:
             - name: tls-certs
               mountPath: /etc/nginx/ssl
               readOnly: true
-          envFrom:
-            - secretRef:
-                name: proxy-secret
+            - name: env-file
+              mountPath: /etc/nginx/env
+              readOnly: true

@@ -1,5 +1,15 @@
 #!/bin/sh
 
+# Source environment variables from mounted secret file
+if [ -f /etc/nginx/env/.env ]; then
+    echo "Loading environment variables from /etc/nginx/env/.env"
+    set -a  # automatically export all variables
+    . /etc/nginx/env/.env
+    set +a  # stop automatically exporting
+else
+    echo "Warning: /etc/nginx/env/.env not found, using existing environment variables"
+fi
+
 # Validate critical environment variables
 if [ -z "$AUTH_SERVICE_HOST" ]; then
     echo "ERROR: AUTH_SERVICE_HOST environment variable is not set or empty"
