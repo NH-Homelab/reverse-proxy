@@ -1,3 +1,7 @@
+location @oauth_redirect {
+    return 302 https://auth.nicholashenley.com/google/login;
+}
+
 upstream auth-backend {
     zone auth-backend 64k;
     server ${AUTH_SERVICE_HOST}:${AUTH_SERVICE_PORT} resolve;
