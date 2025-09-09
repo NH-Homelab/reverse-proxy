@@ -41,6 +41,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Create .env file from secrets
         run: |
+          touch /etc/nginx/.env
           echo "MINIO_HOST=${MINIO_HOST}" >> /etc/nginx/.env
           echo "MINIO_PORT=${MINIO_PORT}" >> /etc/nginx/.env
           echo "PGADMIN_HOST=${PGADMIN_HOST}" >> /etc/nginx/.env
