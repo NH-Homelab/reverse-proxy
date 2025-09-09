@@ -21,8 +21,7 @@ if [ -z "$AUTH_SERVICE_PORT" ]; then
     exit 1
 fi
 
-echo "AUTH_SERVICE_HOST: $AUTH_SERVICE_HOST"
-echo "AUTH_SERVICE_PORT: $AUTH_SERVICE_PORT"
+echo "Substituting environment variables in service templates for nginx configuration."
 
 # Process each service template with envsubst
 envsubst "\$MINIO_HOST \$MINIO_PORT" < /etc/nginx/templates/minio.conf.template > /etc/nginx/conf.d/minio.conf
@@ -32,11 +31,7 @@ envsubst "\$PIHOLE_HOST \$PIHOLE_PORT" < /etc/nginx/templates/pihole.conf.templa
 envsubst "\$PROXMOX_HOST \$PROXMOX_PORT" < /etc/nginx/templates/proxmox.conf.template > /etc/nginx/conf.d/proxmox.conf
 envsubst "\$AUTH_SERVICE_HOST \$AUTH_SERVICE_PORT" < /etc/nginx/templates/auth-request.conf.template > /etc/nginx/conf.d/auth-request.conf
 
-echo "Generated auth-request.conf:"
-cat /etc/nginx/conf.d/auth-request.conf
-echo "\$AUTH_SERVICE_HOST and \$AUTH_SERVICE_PORT have been substituted in auth-request.conf."
-
-echo "Processed service templates with envsubst."
+echo "Starting nginx"
 
 # Start nginx
 exec nginx -g "daemon off;"
