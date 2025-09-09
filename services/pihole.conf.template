@@ -1,12 +1,12 @@
+upstream pihole {
+    zone pihole 64k;
+    server ${PIHOLE_HOST}:${PIHOLE_PORT} resolve;
+}
+
 server {
-    listen 443 ssl;
-    ssl_certificate     /etc/nginx/ssl/tls.crt;
-    ssl_certificate_key /etc/nginx/ssl/tls.key;
+    include /etc/nginx/snippets/ssl-common.conf;
 
     server_name pihole.nicholashenley.com;
-
-    # set $Original_Host $host;
-    # set $Original_Path $request_uri;
 
     location = / {
 	return 301 https://pihole.nicholashenley.com/admin/index.php;
@@ -18,7 +18,7 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade"; 
-        proxy_pass http://pihole.local:80;
+        proxy_pass http://pihole;
 
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -32,12 +32,5 @@ server {
         send_timeout  3600s;
     }
 
-    location = /auth-request {
-        internal;
-        proxy_pass http://auth-service:8080;
-        proxy_pass_request_body off;
-        proxy_set_header Content-Length "";
-        proxy_set_header X-Original-URI $request_uri;
-        proxy_set_header Host $host;
-    }
+    include /etc/nginx/snippets/auth-request.conf;
 }

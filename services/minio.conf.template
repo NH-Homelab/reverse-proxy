@@ -1,0 +1,22 @@
+upstream minio {
+    zone minio 64k;
+    server ${MINIO_HOST}:${MINIO_PORT} resolve;
+}
+
+server {
+    include /etc/nginx/snippets/ssl-common.conf;
+    
+    server_name  minio.nicholashenley.com;
+
+    location / {
+        auth_request /auth-request;
+        
+        proxy_pass http://minio/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    include /etc/nginx/snippets/auth-request.conf;
+}

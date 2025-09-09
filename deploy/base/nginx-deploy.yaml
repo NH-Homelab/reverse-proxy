@@ -14,8 +14,16 @@ spec:
       labels:
         app: nginx
     spec:
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: tls-certs
       containers:
       - name: nginx-container
         image: ghcr.io/nh-homelab/reverse-proxy:latest
+        volumeMounts:
+            - name: tls-certs
+              mountPath: /etc/nginx/ssl
+              readOnly: true
       imagePullSecrets:
       - name: ghcr-creds

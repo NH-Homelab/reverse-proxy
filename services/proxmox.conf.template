@@ -1,12 +1,12 @@
+upstream proxmox {
+    zone proxmox 64k;
+    server ${PROXMOX_HOST}:${PROXMOX_PORT} resolve;
+}
+
 server {
-    listen 443 ssl;
-    ssl_certificate     /etc/nginx/ssl/tls.crt;
-    ssl_certificate_key /etc/nginx/ssl/tls.key;
+    include /etc/nginx/snippets/ssl-common.conf;
 
     server_name proxmox.nicholashenley.com;
-
-    # set $Original_Host $host;
-    # set $Original_Path $request_uri;
 
     location / {
         auth_request /auth-request;
@@ -14,7 +14,7 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade"; 
-        proxy_pass https://proxmox.local:8006;
+        proxy_pass https://proxmox;
 
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -28,12 +28,5 @@ server {
         send_timeout  3600s;
     }
 
-    location = /auth-request {
-        internal;
-        proxy_pass http://auth-service:8080;
-        proxy_pass_request_body off;
-        proxy_set_header Content-Length "";
-        proxy_set_header X-Original-URI $request_uri;
-        proxy_set_header Host $host;
-    }
+    include /etc/nginx/snippets/auth-request.conf;
 }

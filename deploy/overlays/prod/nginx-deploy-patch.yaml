@@ -9,10 +9,18 @@ spec:
         - name: tls-certs
           secret:
             secretName: nginx-tls
+        - name: env-file
+          secret:
+            secretName: proxy-secret
+            items:
+              - key: .env
+                path: .env
       containers:
         - name: nginx-container
           volumeMounts:
             - name: tls-certs
               mountPath: /etc/nginx/ssl
               readOnly: true
-          # ...existing container config...
+          envFrom:
+            - secretRef:
+                name: proxy-secret
