@@ -97,4 +97,4 @@ jobs:
         KUBECONFIG: ${{ secrets.KUBECONFIG }}
     - name: Rollout deployment
       run: |
-        kubectl rollout restart deployment/reverse-proxy
+        kubectl rollout restart deployment nginx-deployment
