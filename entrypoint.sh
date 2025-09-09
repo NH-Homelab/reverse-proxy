@@ -1,13 +1,13 @@
 #!/bin/sh
 
 # Source environment variables from mounted secret file
-if [ -f /etc/nginx/env/.env ]; then
-    echo "Loading environment variables from /etc/nginx/env/.env"
+if [ -f /etc/nginx/.env ]; then
+    echo "Loading environment variables from /etc/nginx/.env"
     set -a  # automatically export all variables
-    . /etc/nginx/env/.env
+    . /etc/nginx/.env
     set +a  # stop automatically exporting
 else
-    echo "Warning: /etc/nginx/env/.env not found, using existing environment variables"
+    echo "Warning: /etc/nginx/.env not found, using existing environment variables"
 fi
 
 # Validate critical environment variables
