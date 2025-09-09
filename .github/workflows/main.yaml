@@ -81,9 +81,9 @@ jobs:
     runs-on: self-hosted
     steps:
     - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
     - name: Create Kubernetes Secret from .env
       run: |
         kubectl create secret generic proxy-secret \
