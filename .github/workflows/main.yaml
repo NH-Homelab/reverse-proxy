@@ -10,7 +10,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  deploy:
+  build-and-push:
     runs-on: self-hosted
     env:
       MINIO_HOST: ${{ secrets.MINIO_HOST }}
@@ -53,11 +53,6 @@ jobs:
           echo "PROXMOX_PORT=${PROXMOX_PORT}" >> deploy/overlays/prod/.env
           echo "AUTH_SERVICE_HOST=${AUTH_SERVICE_HOST}" >> deploy/overlays/prod/.env
           echo "AUTH_SERVICE_PORT=${AUTH_SERVICE_PORT}" >> deploy/overlays/prod/.env
-      - name: Create Kubernetes Secret from .env
-        run: |
-          kubectl create secret generic proxy-secret \
-            --from-file=.env=deploy/overlays/prod/.env \
-            --dry-run=client -o yaml > deploy/overlays/prod/secret.yaml
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -82,12 +77,20 @@ jobs:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-      - name: Set up kubectl
+  deploy-k8s-prod:
+    runs-on: self-hosted
+    steps:
+    - name: Set up kubectl
         uses: azure/setup-kubectl@v3
         with:
           version: 'latest'
-      - name: Apply base kustomization
-        run: |
-          kubectl apply -k deploy/overlays/prod --validate=false
-        env:
-          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+    - name: Create Kubernetes Secret from .env
+      run: |
+        kubectl create secret generic proxy-secret \
+          --from-file=.env=deploy/overlays/prod/.env \
+          --dry-run=client -o yaml > deploy/overlays/prod/secret.yaml
+    - name: Apply base kustomization
+      run: |
+        kubectl apply -k deploy/overlays/prod --validate=false
+      env:
+        KUBECONFIG: ${{ secrets.KUBECONFIG }}

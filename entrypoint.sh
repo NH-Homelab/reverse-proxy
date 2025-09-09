@@ -8,6 +8,7 @@ envsubst "\$PIHOLE_HOST \$PIHOLE_PORT" < /etc/nginx/templates/pihole.conf.templa
 envsubst "\$PROXMOX_HOST \$PROXMOX_PORT" < /etc/nginx/templates/proxmox.conf.template > /etc/nginx/conf.d/proxmox.conf
 envsubst "\$AUTH_SERVICE_HOST \$AUTH_SERVICE_PORT" < /etc/nginx/templates/auth-request.conf.template > /etc/nginx/conf.d/auth-request.conf
 
+echo "\$AUTH_SERVICE_HOST and \$AUTH_SERVICE_PORT have been substituted in auth-request.conf."
 
 echo "Processed service templates with envsubst."
 
