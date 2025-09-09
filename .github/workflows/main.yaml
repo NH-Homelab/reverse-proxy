@@ -95,3 +95,6 @@ jobs:
         kubectl apply -k deploy/overlays/prod --validate=false
       env:
         KUBECONFIG: ${{ secrets.KUBECONFIG }}
+    - name: Rollout deployment
+      run: |
+        kubectl rollout restart deployment/reverse-proxy
