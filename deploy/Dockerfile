@@ -14,6 +14,7 @@ COPY services/auth-request.conf.template /etc/nginx/templates/auth-request.conf.
 # Copy snippets
 COPY snippets/ssl-common.conf /etc/nginx/snippets/ssl-common.conf
 COPY snippets/auth-request.conf /etc/nginx/snippets/auth-request.conf
+COPY snippets/auth-common.conf /etc/nginx/snippets/auth-common.conf
 
 # Copy HTML file
 COPY test.html /usr/share/nginx/html/index.html
