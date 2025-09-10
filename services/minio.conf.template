@@ -3,6 +3,12 @@ upstream minio {
     server ${MINIO_HOST}:${MINIO_PORT} resolve;
 }
 
+# Static files stored here
+upstream minio_s3 {
+    zone minio 64k;
+    server ${MINIO_HOST}:${MINIO_S3_PORT} resolve;
+}
+
 server {
     include /etc/nginx/snippets/ssl-common.conf;
     
