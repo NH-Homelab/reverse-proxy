@@ -15,6 +15,7 @@ jobs:
     env:
       MINIO_HOST: ${{ secrets.MINIO_HOST }}
       MINIO_PORT: ${{ secrets.MINIO_PORT }}
+      MINIO_S3_PORT: ${{ secrets.MINIO_S3_PORT }}
       PGADMIN_HOST: ${{ secrets.PGADMIN_HOST }}
       PGADMIN_PORT: ${{ secrets.PGADMIN_PORT }}
       PLEX_HOST: ${{ secrets.PLEX_HOST }}
@@ -43,6 +44,7 @@ jobs:
         run: |
           echo "MINIO_HOST=${MINIO_HOST}" >> deploy/overlays/prod/.env
           echo "MINIO_PORT=${MINIO_PORT}" >> deploy/overlays/prod/.env
+          echo "MINIO_S3_PORT=${MINIO_S3_PORT}" >> deploy/overlays/prod/.env
           echo "PGADMIN_HOST=${PGADMIN_HOST}" >> deploy/overlays/prod/.env
           echo "PGADMIN_PORT=${PGADMIN_PORT}" >> deploy/overlays/prod/.env
           echo "PLEX_HOST=${PLEX_HOST}" >> deploy/overlays/prod/.env
