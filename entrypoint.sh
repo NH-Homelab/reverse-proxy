@@ -33,5 +33,11 @@ envsubst "\$AUTH_SERVICE_HOST \$AUTH_SERVICE_PORT" < /etc/nginx/templates/auth-r
 
 echo "Starting nginx"
 
-# Start nginx
-exec nginx -g "daemon off;"
+# Start nginx with debug mode if NGINX_DEBUG is set to true
+if [ "$NGINX_DEBUG" = "true" ]; then
+    echo "Debug mode enabled - starting nginx-debug"
+    exec nginx-debug -g "daemon off;"
+else
+    echo "Starting nginx in normal mode"
+    exec nginx -g "daemon off;"
+fi
