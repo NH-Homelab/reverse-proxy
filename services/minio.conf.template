@@ -12,7 +12,7 @@ upstream minio_s3 {
 server {
     include /etc/nginx/snippets/ssl-common.conf;
     
-    server_name  minio.nicholashenley.com;
+    server_name  minio.nickhenley.dev;
 
     location / {
         include /etc/nginx/snippets/auth-common.conf;

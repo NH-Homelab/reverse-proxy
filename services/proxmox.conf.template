@@ -6,7 +6,7 @@ upstream proxmox {
 server {
     include /etc/nginx/snippets/ssl-common.conf;
 
-    server_name proxmox.nicholashenley.com;
+    server_name proxmox.nickhenley.dev;
 
     location / {
         include /etc/nginx/snippets/auth-common.conf;

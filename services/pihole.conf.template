@@ -6,10 +6,10 @@ upstream pihole {
 server {
     include /etc/nginx/snippets/ssl-common.conf;
 
-    server_name pihole.nicholashenley.com;
+    server_name pihole.nickhenley.dev;
 
     location = / {
-	return 301 https://pihole.nicholashenley.com/admin/index.php;
+	return 301 https://pihole.nickhenley.dev/admin/index.php;
     }
 
     location / {

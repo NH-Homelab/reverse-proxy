@@ -6,7 +6,7 @@ upstream plex {
 server{
     include /etc/nginx/snippets/ssl-common.conf;
     
-    server_name watch.nicholashenley.com;
+    server_name watch.nickhenley.dev;
 
     gzip on;
     gzip_vary on;
