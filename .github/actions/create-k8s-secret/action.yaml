@@ -30,23 +30,25 @@ runs:
         mkdir -p $HOME/.kube
         echo "${{ inputs.kubeconfig }}" | base64 -d > $HOME/.kube/config
         chmod 600 $HOME/.kube/config
+        # Verify kubeconfig is valid
+        export KUBECONFIG=$HOME/.kube/config
+        kubectl config view --minify
+        kubectl cluster-info
 
     - name: Create Kubernetes Secret
       shell: bash
       run: |
-        # Parse the JSON input and create secret arguments
-        SECRET_ARGS=""
-        echo '${{ inputs.secret-vars }}' | jq -r 'to_entries[] | "--from-literal=\(.key)=\(.value)"' | while read -r line; do
-          SECRET_ARGS="$SECRET_ARGS $line"
-        done
-        
         # Create the secret
         kubectl create secret generic ${{ inputs.secret-name }} \
           $(echo '${{ inputs.secret-vars }}' | jq -r 'to_entries[] | "--from-literal=\(.key)=\(.value)"' | tr '\n' ' ') \
           --namespace=${{ inputs.namespace }} \
           --dry-run=client -o yaml | kubectl apply -f -
+      env:
+        KUBECONFIG: $HOME/.kube/config
 
     - name: Verify secret creation
       shell: bash
       run: |
         kubectl get secret ${{ inputs.secret-name }} -n ${{ inputs.namespace }} -o yaml
+      env:
+        KUBECONFIG: $HOME/.kube/config
