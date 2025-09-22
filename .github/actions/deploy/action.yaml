@@ -1,0 +1,72 @@
+name: 'Deploy to Kubernetes'
+description: 'Deploy application to Kubernetes using Kustomize'
+
+inputs:
+  environment:
+    description: 'Deployment environment (dev/prod)'
+    required: true
+  kubeconfig:
+    description: 'Base64 encoded kubeconfig content'
+    required: true
+  image-tag:
+    description: 'Docker image tag to deploy'
+    required: true
+  kustomize-path:
+    description: 'Path to kustomization directory'
+    required: false
+    default: 'deploy/overlays'
+  deployment-name:
+    description: 'Name of the deployment to restart'
+    required: false
+    default: 'nginx-deployment'
+  namespace:
+    description: 'Kubernetes namespace'
+    required: false
+    default: 'default'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+
+    - name: Setup kubeconfig
+      shell: bash
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ inputs.kubeconfig }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+
+    - name: Update image tag in kustomization
+      shell: bash
+      run: |
+        cd ${{ inputs.kustomize-path }}/${{ inputs.environment }}
+        # Create or update kustomization.yaml to set the image tag
+        if ! grep -q "images:" kustomization.yaml; then
+          echo -e "\nimages:" >> kustomization.yaml
+          echo "  - name: ghcr.io/nh-homelab/reverse-proxy" >> kustomization.yaml
+          echo "    newTag: ${{ inputs.image-tag }}" >> kustomization.yaml
+        else
+          # Update existing image tag
+          sed -i "s/newTag: .*/newTag: ${{ inputs.image-tag }}/" kustomization.yaml
+        fi
+
+    - name: Apply Kustomization
+      shell: bash
+      run: |
+        kubectl apply -k ${{ inputs.kustomize-path }}/${{ inputs.environment }} --validate=false
+      env:
+        KUBECONFIG: $HOME/.kube/config
+
+    - name: Wait for deployment rollout
+      shell: bash
+      run: |
+        kubectl rollout status deployment/${{ inputs.deployment-name }} -n ${{ inputs.namespace }} --timeout=300s
+
+    - name: Verify deployment
+      shell: bash
+      run: |
+        kubectl get pods -l app=nginx -n ${{ inputs.namespace }}
+        kubectl get service -l app=nginx -n ${{ inputs.namespace }}

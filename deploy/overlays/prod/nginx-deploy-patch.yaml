@@ -9,19 +9,12 @@ spec:
         - name: tls-certs
           secret:
             secretName: nginx-tls
-        - name: env-file
-          secret:
-            secretName: proxy-secret
-            items:
-              - key: .env
-                path: .env
       containers:
         - name: nginx-container
           volumeMounts:
             - name: tls-certs
               mountPath: /etc/nginx/ssl
               readOnly: true
-            - name: env-file
-              mountPath: deploy/overlays/prod/.env
-              subPath: .env
-              readOnly: true
+          envFrom:
+            - secretRef:
+                name: proxy-config-secret
