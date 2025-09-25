@@ -27,22 +27,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
-
-    - name: Setup kubeconfig
-      shell: bash
-      run: |
-        mkdir -p $HOME/.kube
-        echo "${{ inputs.kubeconfig }}" | base64 -d > $HOME/.kube/config
-        chmod 600 $HOME/.kube/config
-        # Verify kubeconfig is valid
-        export KUBECONFIG=$HOME/.kube/config
-        kubectl config view --minify
-        kubectl cluster-info
-
     - name: Update image tag in kustomization
       shell: bash
       run: |
@@ -56,27 +40,19 @@ runs:
           # Update existing image tag
           sed -i "s/newTag: .*/newTag: ${{ inputs.image-tag }}/" kustomization.yaml
         fi
-      env:
-        KUBECONFIG: $HOME/.kube/config
 
     - name: Apply Kustomization
       shell: bash
       run: |
         kubectl apply -k ${{ inputs.kustomize-path }}/${{ inputs.environment }} --validate=false
-      env:
-        KUBECONFIG: $HOME/.kube/config
 
     - name: Wait for deployment rollout
       shell: bash
       run: |
         kubectl rollout status deployment/${{ inputs.deployment-name }} -n ${{ inputs.namespace }} --timeout=300s
-      env:
-        KUBECONFIG: $HOME/.kube/config
 
     - name: Verify deployment
       shell: bash
       run: |
         kubectl get pods -l app=nginx -n ${{ inputs.namespace }}
         kubectl get service -l app=nginx -n ${{ inputs.namespace }}
-      env:
-        KUBECONFIG: $HOME/.kube/config
