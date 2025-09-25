@@ -51,7 +51,7 @@ jobs:
         with:
           secret-name: proxy-config-secret
           namespace: default
-          kubeconfig: ${{ secrets.DEV_KUBECONFIG }}
+          kubeconfig: ${{ secrets.KUBECONFIG }}
           secret-vars: |
             {
               "MINIO_HOST": "${{ secrets.MINIO_HOST }}",
@@ -73,7 +73,7 @@ jobs:
         uses: ./.github/actions/deploy
         with:
           environment: prod  # Use prod overlay for dev deployment
-          kubeconfig: ${{ secrets.DEV_KUBECONFIG }}
+          kubeconfig: ${{ secrets.KUBECONFIG }}
           image-tag: ${{ github.sha }}
 
   deploy-prod:
@@ -94,7 +94,7 @@ jobs:
         with:
           secret-name: proxy-config-secret
           namespace: default
-          kubeconfig: ${{ secrets.PROD_KUBECONFIG }}
+          kubeconfig: ${{ secrets.KUBECONFIG }}
           secret-vars: |
             {
               "MINIO_HOST": "${{ secrets.MINIO_HOST }}",
@@ -116,5 +116,5 @@ jobs:
         uses: ./.github/actions/deploy
         with:
           environment: prod
-          kubeconfig: ${{ secrets.PROD_KUBECONFIG }}
+          kubeconfig: ${{ secrets.KUBECONFIG }}
           image-tag: ${{ github.sha }}

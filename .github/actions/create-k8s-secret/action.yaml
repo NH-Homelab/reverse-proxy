@@ -24,13 +24,6 @@ runs:
       with:
         version: 'latest'
 
-    - name: Setup kubeconfig
-      shell: bash
-      run: |
-        export KUBECONFIG=$HOME/.kube/config
-        kubectl config view --minify
-        kubectl cluster-info
-
     - name: Create Kubernetes Secret
       shell: bash
       run: |
@@ -39,12 +32,8 @@ runs:
           $(echo '${{ inputs.secret-vars }}' | jq -r 'to_entries[] | "--from-literal=\(.key)=\(.value)"' | tr '\n' ' ') \
           --namespace=${{ inputs.namespace }} \
           --dry-run=client -o yaml | kubectl apply -f -
-      env:
-        KUBECONFIG: $HOME/.kube/config
 
     - name: Verify secret creation
       shell: bash
       run: |
         kubectl get secret ${{ inputs.secret-name }} -n ${{ inputs.namespace }} -o yaml
-      env:
-        KUBECONFIG: $HOME/.kube/config
