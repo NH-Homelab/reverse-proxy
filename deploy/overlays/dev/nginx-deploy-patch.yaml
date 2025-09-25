@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: nginx-container
-          image: nginx:local-test # Use your locally built image tag
+          image: ghcr.io/nh-homelab/reverse-proxy:latest
           envFrom:
-            - configMapRef:
-                name: nginx-env
+            - secretRef:
+                name: proxy-config-secret

@@ -1,31 +1,27 @@
-name: Deploy Base Kustomization
+name: Deploy Reverse Proxy
 
 on:
   push:
     branches:
-      - main
+      - '**'  # Trigger on push to any branch
+  workflow_dispatch:
+    inputs:
+      deploy_to_prod:
+        description: 'Deploy to production'
+        required: false
+        default: false
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push:
+  build:
     runs-on: self-hosted
-    env:
-      MINIO_HOST: ${{ secrets.MINIO_HOST }}
-      MINIO_PORT: ${{ secrets.MINIO_PORT }}
-      MINIO_S3_PORT: ${{ secrets.MINIO_S3_PORT }}
-      PGADMIN_HOST: ${{ secrets.PGADMIN_HOST }}
-      PGADMIN_PORT: ${{ secrets.PGADMIN_PORT }}
-      PLEX_HOST: ${{ secrets.PLEX_HOST }}
-      PLEX_PORT: ${{ secrets.PLEX_PORT }}
-      PIHOLE_HOST: ${{ secrets.PIHOLE_HOST }}
-      PIHOLE_PORT: ${{ secrets.PIHOLE_PORT }}
-      PROXMOX_HOST: ${{ secrets.PROXMOX_HOST }}
-      PROXMOX_PORT: ${{ secrets.PROXMOX_PORT }}
-      AUTH_SERVICE_HOST: ${{ secrets.AUTH_SERVICE_HOST }}
-      AUTH_SERVICE_PORT: ${{ secrets.AUTH_SERVICE_PORT }}
+    outputs:
+      image-digest: ${{ steps.build.outputs.image-digest }}
+      image-tags: ${{ steps.build.outputs.image-tags }}
     permissions:
       contents: read
       packages: write
@@ -34,69 +30,91 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Log in to Docker Hub
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+
+      - name: Build and push Docker image
+        id: build
+        uses: ./.github/actions/build-image
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create .env file from secrets
-        run: |
-          echo "MINIO_HOST=${MINIO_HOST}" >> deploy/overlays/prod/.env
-          echo "MINIO_PORT=${MINIO_PORT}" >> deploy/overlays/prod/.env
-          echo "MINIO_S3_PORT=${MINIO_S3_PORT}" >> deploy/overlays/prod/.env
-          echo "PGADMIN_HOST=${PGADMIN_HOST}" >> deploy/overlays/prod/.env
-          echo "PGADMIN_PORT=${PGADMIN_PORT}" >> deploy/overlays/prod/.env
-          echo "PLEX_HOST=${PLEX_HOST}" >> deploy/overlays/prod/.env
-          echo "PLEX_PORT=${PLEX_PORT}" >> deploy/overlays/prod/.env
-          echo "PIHOLE_HOST=${PIHOLE_HOST}" >> deploy/overlays/prod/.env
-          echo "PIHOLE_PORT=${PIHOLE_PORT}" >> deploy/overlays/prod/.env
-          echo "PROXMOX_HOST=${PROXMOX_HOST}" >> deploy/overlays/prod/.env
-          echo "PROXMOX_PORT=${PROXMOX_PORT}" >> deploy/overlays/prod/.env
-          echo "AUTH_SERVICE_HOST=${AUTH_SERVICE_HOST}" >> deploy/overlays/prod/.env
-          echo "AUTH_SERVICE_PORT=${AUTH_SERVICE_PORT}" >> deploy/overlays/prod/.env
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
-      - name: Build and push Docker image
-        id: push
-        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
-        with:
-          context: .
-          file: ./deploy/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
-          subject-digest: ${{ steps.push.outputs.digest }}
-          push-to-registry: true
-  deploy-k8s-prod:
-    runs-on: self-hosted
-    needs: build-and-push
+          image-name: ${{ env.IMAGE_NAME }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-dev:
+    runs-on: dev
+    needs: build
     steps:
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
-    - name: Create Kubernetes Secret from .env
-      run: |
-        kubectl create secret generic proxy-secret \
-          --from-file=.env=deploy/overlays/prod/.env \
-          --dry-run=client -o yaml > deploy/overlays/prod/secret.yaml
-    - name: Apply base kustomization
-      run: |
-        kubectl apply -k deploy/overlays/prod --validate=false
-      env:
-        KUBECONFIG: ${{ secrets.KUBECONFIG }}
-    - name: Rollout deployment
-      run: |
-        kubectl rollout restart deployment nginx-deployment
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create Kubernetes Secret for Dev
+        uses: ./.github/actions/create-k8s-secret
+        with:
+          secret-name: proxy-config-secret
+          namespace: default
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          secret-vars: |
+            {
+              "MINIO_HOST": "${{ secrets.MINIO_HOST }}",
+              "MINIO_PORT": "${{ secrets.MINIO_PORT }}",
+              "MINIO_S3_PORT": "${{ secrets.MINIO_S3_PORT }}",
+              "PGADMIN_HOST": "${{ secrets.PGADMIN_HOST }}",
+              "PGADMIN_PORT": "${{ secrets.PGADMIN_PORT }}",
+              "PLEX_HOST": "${{ secrets.PLEX_HOST }}",
+              "PLEX_PORT": "${{ secrets.PLEX_PORT }}",
+              "PIHOLE_HOST": "${{ secrets.PIHOLE_HOST }}",
+              "PIHOLE_PORT": "${{ secrets.PIHOLE_PORT }}",
+              "PROXMOX_HOST": "${{ secrets.PROXMOX_HOST }}",
+              "PROXMOX_PORT": "${{ secrets.PROXMOX_PORT }}",
+              "AUTH_SERVICE_HOST": "${{ secrets.AUTH_SERVICE_HOST }}",
+              "AUTH_SERVICE_PORT": "${{ secrets.AUTH_SERVICE_PORT }}"
+            }
+
+      - name: Deploy to Dev
+        uses: ./.github/actions/deploy
+        with:
+          environment: prod  # Use prod overlay for dev deployment
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          image-tag: ${{ needs.build.outputs.sha-tag }}
+
+  deploy-prod:
+    runs-on: k8s-runner
+    needs: [build, deploy-dev]
+    # Deploy to prod if:
+    # 1. Push/merge to main branch, OR
+    # 2. Manual workflow dispatch with deploy_to_prod = true
+    if: |
+      (github.ref == 'refs/heads/main' && github.event_name == 'push') ||
+      (github.event_name == 'workflow_dispatch' && inputs.deploy_to_prod == true)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create Kubernetes Secret for Prod
+        uses: ./.github/actions/create-k8s-secret
+        with:
+          secret-name: proxy-config-secret
+          namespace: default
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          secret-vars: |
+            {
+              "MINIO_HOST": "${{ secrets.MINIO_HOST }}",
+              "MINIO_PORT": "${{ secrets.MINIO_PORT }}",
+              "MINIO_S3_PORT": "${{ secrets.MINIO_S3_PORT }}",
+              "PGADMIN_HOST": "${{ secrets.PGADMIN_HOST }}",
+              "PGADMIN_PORT": "${{ secrets.PGADMIN_PORT }}",
+              "PLEX_HOST": "${{ secrets.PLEX_HOST }}",
+              "PLEX_PORT": "${{ secrets.PLEX_PORT }}",
+              "PIHOLE_HOST": "${{ secrets.PIHOLE_HOST }}",
+              "PIHOLE_PORT": "${{ secrets.PIHOLE_PORT }}",
+              "PROXMOX_HOST": "${{ secrets.PROXMOX_HOST }}",
+              "PROXMOX_PORT": "${{ secrets.PROXMOX_PORT }}",
+              "AUTH_SERVICE_HOST": "${{ secrets.AUTH_SERVICE_HOST }}",
+              "AUTH_SERVICE_PORT": "${{ secrets.AUTH_SERVICE_PORT }}"
+            }
+
+      - name: Deploy to Prod
+        uses: ./.github/actions/deploy
+        with:
+          environment: prod
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          image-tag: ${{ needs.build.outputs.sha-tag }}

@@ -1,0 +1,34 @@
+name: 'Create Kubernetes Secret'
+description: 'Create or update a Kubernetes secret from environment variables'
+
+inputs:
+  secret-name:
+    description: 'Name of the Kubernetes secret to create'
+    required: true
+  namespace:
+    description: 'Kubernetes namespace'
+    required: false
+    default: 'default'
+  kubeconfig:
+    description: 'Base64 encoded kubeconfig content'
+    required: true
+  secret-vars:
+    description: 'JSON object containing key-value pairs for the secret'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Create Kubernetes Secret
+      shell: bash
+      run: |
+        # Create the secret
+        kubectl create secret generic ${{ inputs.secret-name }} \
+          $(echo '${{ inputs.secret-vars }}' | jq -r 'to_entries[] | "--from-literal=\(.key)=\(.value)"' | tr '\n' ' ') \
+          --namespace=${{ inputs.namespace }} \
+          --dry-run=client -o yaml | kubectl apply -f -
+
+    - name: Verify secret creation
+      shell: bash
+      run: |
+        kubectl get secret ${{ inputs.secret-name }} -n ${{ inputs.namespace }} -o yaml

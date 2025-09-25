@@ -1,0 +1,70 @@
+name: 'Build and Push Docker Image'
+description: 'Build and push a Docker image to the container registry'
+
+inputs:
+  registry:
+    description: 'Container registry URL'
+    required: true
+    default: 'ghcr.io'
+  image-name:
+    description: 'Image name'
+    required: true
+  dockerfile:
+    description: 'Path to Dockerfile'
+    required: false
+    default: './deploy/Dockerfile'
+  context:
+    description: 'Build context'
+    required: false
+    default: '.'
+  github-token:
+    description: 'GitHub token for registry authentication'
+    required: true
+
+outputs:
+  image-digest:
+    description: 'The digest of the built image'
+    value: ${{ steps.push.outputs.digest }}
+  image-tags:
+    description: 'The tags of the built image'
+    value: ${{ steps.meta.outputs.tags }}
+  sha-tag:
+    description: 'The SHA tag specifically'
+    value: ${{ steps.extract-sha.outputs.sha-tag }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ github.actor }}
+        password: ${{ inputs.github-token }}
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ inputs.registry }}/${{ inputs.image-name }}
+        tags: |
+          type=ref,event=branch
+          type=sha
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Build and push Docker image
+      id: push
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.dockerfile }}
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-name: ${{ inputs.registry }}/${{ inputs.image-name }}
+        subject-digest: ${{ steps.push.outputs.digest }}
+        push-to-registry: true
