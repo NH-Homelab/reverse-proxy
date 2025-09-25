@@ -28,6 +28,9 @@ outputs:
   image-tags:
     description: 'The tags of the built image'
     value: ${{ steps.meta.outputs.tags }}
+  sha-tag:
+    description: 'The SHA tag specifically'
+    value: ${{ steps.extract-sha.outputs.sha-tag }}
 
 runs:
   using: 'composite'

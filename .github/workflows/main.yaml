@@ -74,7 +74,7 @@ jobs:
         with:
           environment: prod  # Use prod overlay for dev deployment
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          image-tag: ${{ github.sha }}
+          image-tag: ${{ needs.build.outputs.sha-tag }}
 
   deploy-prod:
     runs-on: k8s-runner
@@ -117,4 +117,4 @@ jobs:
         with:
           environment: prod
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          image-tag: ${{ github.sha }}
+          image-tag: ${{ needs.build.outputs.sha-tag }}
