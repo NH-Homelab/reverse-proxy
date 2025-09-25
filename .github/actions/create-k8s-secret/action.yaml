@@ -19,11 +19,6 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
-
     - name: Create Kubernetes Secret
       shell: bash
       run: |
