@@ -1,18 +1,18 @@
 #!/bin/sh
 
-# Source environment variables from mounted secret file
-if [ -f deploy/overlays/prod/.env ]; then
-    echo "Loading environment variables from deploy/overlays/prod/.env"
-    set -a  # automatically export all variables
-    . deploy/overlays/prod/.env
-    set +a  # stop automatically exporting
-else
-    echo "Warning: deploy/overlays/prod/.env not found, using existing environment variables"
-fi
+# Debug: Show environment variables for troubleshooting
+echo "=== Environment Variables Debug ==="
+echo "AUTH_SERVICE_HOST: '${AUTH_SERVICE_HOST}'"
+echo "AUTH_SERVICE_PORT: '${AUTH_SERVICE_PORT}'"
+echo "DOMAIN: '${DOMAIN}'"
+echo "All SERVICE/HOST/PORT variables:"
+env | grep -E "(SERVICE|HOST|PORT|DOMAIN)" | sort || echo "No matching variables found"
 
 # Validate critical environment variables
 if [ -z "$AUTH_SERVICE_HOST" ]; then
     echo "ERROR: AUTH_SERVICE_HOST environment variable is not set or empty"
+    echo "All available environment variables:"
+    env | sort
     exit 1
 fi
 
