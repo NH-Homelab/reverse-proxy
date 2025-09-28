@@ -27,37 +27,67 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Update image tag in kustomization
+    - name: Apply base Kustomization (without image updates)
       shell: bash
       run: |
-        cd ${{ inputs.kustomize-path }}/${{ inputs.environment }}
-        # Create or update kustomization.yaml to set the image tag
-        if ! grep -q "images:" kustomization.yaml; then
-          echo -e "\nimages:" >> kustomization.yaml
-          echo "  - name: ghcr.io/nh-homelab/reverse-proxy" >> kustomization.yaml
-          echo "    newTag: ${{ inputs.image-tag }}" >> kustomization.yaml
+        export KUBECONFIG=/tmp/kubeconfig
+        kubectl apply -k ${{ inputs.kustomize-path }}/${{ inputs.environment }} --validate=false
+
+    - name: Update image tag in deployment
+      shell: bash
+      run: |
+        export KUBECONFIG=/tmp/kubeconfig
+        if [ -n "${{ inputs.image-tag }}" ] && [ "${{ inputs.image-tag }}" != "latest" ]; then
+          echo "Updating deployment image to: ghcr.io/nh-homelab/reverse-proxy:${{ inputs.image-tag }}"
+          
+          kubectl patch deployment ${{ inputs.deployment-name }} \
+            -n ${{ inputs.namespace }} \
+            -p '{"spec":{"template":{"spec":{"containers":[{"name":"nginx","image":"ghcr.io/nh-homelab/reverse-proxy:${{ inputs.image-tag }}"}]}}}}' \
+            --dry-run=client -o yaml | kubectl apply -f -
         else
-          # Update existing image tag
-          sed -i "s/newTag: .*/newTag: ${{ inputs.image-tag }}/" kustomization.yaml
+          echo "Skipping image update: tag is empty or 'latest'"
         fi
 
-    - name: Apply Kustomization
-      shell: bash
-      run: |
-        kubectl apply -k ${{ inputs.kustomize-path }}/${{ inputs.environment }} --validate=false
-    
     - name: Rollout restart
       shell: bash
       run: |
+        export KUBECONFIG=/tmp/kubeconfig
         kubectl rollout restart deployment/${{ inputs.deployment-name }} -n ${{ inputs.namespace }}
 
     - name: Wait for deployment rollout
       shell: bash
       run: |
+        export KUBECONFIG=/tmp/kubeconfig
         kubectl rollout status deployment/${{ inputs.deployment-name }} -n ${{ inputs.namespace }} --timeout=300s
 
-    - name: Verify deployment
+    - name: Verify deployment and image
       shell: bash
       run: |
+        export KUBECONFIG=/tmp/kubeconfig
+        # Expected image
+        EXPECTED_IMAGE="ghcr.io/nh-homelab/reverse-proxy:${{ inputs.image-tag }}"
+        
+        # Verify deployment spec has correct image
+        DEPLOYMENT_IMAGE=$(kubectl get deployment/${{ inputs.deployment-name }} -n ${{ inputs.namespace }} -o jsonpath='{.spec.template.spec.containers[0].image}')
+        echo "Deployment image: $DEPLOYMENT_IMAGE"
+        
+        # Verify running pods have correct image
+        echo "Pod images:"
+        kubectl get pods -l app=nginx -n ${{ inputs.namespace }} -o jsonpath='{.items[*].spec.containers[0].image}' | tr ' ' '\n' | sort -u
+        
+        # Check if deployment image matches expected
+        if [ "$DEPLOYMENT_IMAGE" != "$EXPECTED_IMAGE" ]; then
+          echo "ERROR: Deployment image mismatch!"
+          echo "Expected: $EXPECTED_IMAGE"
+          echo "Actual: $DEPLOYMENT_IMAGE"
+          exit 1
+        fi
+        
+        # Show pod and service status
+        echo "Pod status:"
         kubectl get pods -l app=nginx -n ${{ inputs.namespace }}
+        
+        echo "Service status:"
         kubectl get service -l app=nginx -n ${{ inputs.namespace }}
+        
+        echo "✅ Verification successful: Correct image $EXPECTED_IMAGE is deployed"
