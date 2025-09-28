@@ -22,6 +22,7 @@ jobs:
     outputs:
       image-digest: ${{ steps.build.outputs.image-digest }}
       image-tags: ${{ steps.build.outputs.image-tags }}
+      sha-tag: ${{ steps.build.outputs.sha-tag }}
     permissions:
       contents: read
       packages: write
