@@ -30,7 +30,7 @@ runs:
     - name: Apply base Kustomization (without image updates)
       shell: bash
       run: |
-        kubectl apply -k ${{ inputs.kustomize-path }}/${{ inputs.environment }} --validate=false
+        kubectl apply -k ${{ inputs.kustomize-path }}/${{ inputs.environment }}
 
     - name: Update image tag in deployment
       shell: bash
