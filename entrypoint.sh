@@ -23,6 +23,9 @@ fi
 
 echo "Substituting environment variables in service templates for nginx configuration."
 
+# Process main template with envsubst
+envsubst "\$DOMAIN" < /etc/nginx/templates/nginx.conf.template > /etc/nginx/nginx.conf
+
 # Process each service template with envsubst
 envsubst "\$MINIO_HOST \$MINIO_PORT \$MINIO_S3_PORT \$DOMAIN" < /etc/nginx/templates/minio.conf.template > /etc/nginx/conf.d/minio.conf
 envsubst "\$PGADMIN_HOST \$PGADMIN_PORT \$DOMAIN" < /etc/nginx/templates/pgadmin.conf.template > /etc/nginx/conf.d/pgadmin.conf
