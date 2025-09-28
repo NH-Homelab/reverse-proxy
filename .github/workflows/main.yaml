@@ -66,7 +66,8 @@ jobs:
               "PROXMOX_HOST": "${{ secrets.PROXMOX_HOST }}",
               "PROXMOX_PORT": "${{ secrets.PROXMOX_PORT }}",
               "AUTH_SERVICE_HOST": "${{ secrets.AUTH_SERVICE_HOST }}",
-              "AUTH_SERVICE_PORT": "${{ secrets.AUTH_SERVICE_PORT }}"
+              "AUTH_SERVICE_PORT": "${{ secrets.AUTH_SERVICE_PORT }}",
+              "DOMAIN": "${{ secrets.DEV_DOMAIN }}"
             }
 
       - name: Deploy to Dev
@@ -109,7 +110,8 @@ jobs:
               "PROXMOX_HOST": "${{ secrets.PROXMOX_HOST }}",
               "PROXMOX_PORT": "${{ secrets.PROXMOX_PORT }}",
               "AUTH_SERVICE_HOST": "${{ secrets.AUTH_SERVICE_HOST }}",
-              "AUTH_SERVICE_PORT": "${{ secrets.AUTH_SERVICE_PORT }}"
+              "AUTH_SERVICE_PORT": "${{ secrets.AUTH_SERVICE_PORT }}",
+              "DOMAIN": "${{ secrets.PROD_DOMAIN }}"
             }
 
       - name: Deploy to Prod

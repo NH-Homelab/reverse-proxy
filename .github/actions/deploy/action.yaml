@@ -45,6 +45,11 @@ runs:
       shell: bash
       run: |
         kubectl apply -k ${{ inputs.kustomize-path }}/${{ inputs.environment }} --validate=false
+    
+    - name: Rollout restart
+      shell: bash
+      run: |
+        kubectl rollout restart deployment/${{ inputs.deployment-name }} -n ${{ inputs.namespace }}
 
     - name: Wait for deployment rollout
       shell: bash
