@@ -13,10 +13,22 @@ http {
 
     resolver 10.96.0.10 valid=30s;
 
+    # Redirect non-www to www
     server {
         include /etc/nginx/snippets/ssl-common.conf;
 
-        server_name ${DOMAIN} www.${DOMAIN};
+        server_name ${DOMAIN};
+
+        location / {
+            return 301 https://www.${DOMAIN}$request_uri;
+        }
+    }
+
+    # Main server block for www
+    server {
+        include /etc/nginx/snippets/ssl-common.conf;
+
+        server_name www.${DOMAIN};
 
         location = / {
             return 301 https://www.${DOMAIN}/index.html;
