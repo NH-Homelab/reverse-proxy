@@ -20,4 +20,5 @@ server {
     }
 
     include /etc/nginx/snippets/auth-request.conf;
+    include /etc/nginx/snippets/auth-unauthorized.conf;
 }
