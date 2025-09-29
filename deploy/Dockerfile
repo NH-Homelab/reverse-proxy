@@ -1,7 +1,7 @@
 FROM nginx:alpine
 
 # Copy main nginx config
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx.conf.template /etc/nginx/templates/nginx.conf.template
 
 # Copy service template configs
 COPY services/* /etc/nginx/templates/

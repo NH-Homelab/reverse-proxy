@@ -6,7 +6,7 @@ upstream pgadmin {
 server {
     include /etc/nginx/snippets/ssl-common.conf;
     
-    server_name  pg.nickhenley.dev;
+    server_name  pg.${DOMAIN};
 
     location / {
         include /etc/nginx/snippets/auth-common.conf;
