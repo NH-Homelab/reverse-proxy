@@ -13,7 +13,21 @@ http {
 
     resolver 10.96.0.10 valid=30s;
 
-    # Redirect non-www to www
+    # HTTP redirect for non-www to www (port 80)
+    server {
+        listen 80;
+        server_name ${DOMAIN};
+        return 301 https://www.${DOMAIN}$request_uri;
+    }
+
+    # HTTP redirect for www to HTTPS (port 80)
+    server {
+        listen 80;
+        server_name www.${DOMAIN};
+        return 301 https://www.${DOMAIN}$request_uri;
+    }
+
+    # HTTPS redirect non-www to www (port 443)
     server {
         include /etc/nginx/snippets/ssl-common.conf;
 
