@@ -114,7 +114,7 @@ jobs:
               "PROXMOX_PORT": "${{ secrets.PROXMOX_PORT }}",
               "AUTH_SERVICE_HOST": "${{ secrets.AUTH_SERVICE_HOST }}",
               "AUTH_SERVICE_PORT": "${{ secrets.AUTH_SERVICE_PORT }}",
-              "DOMAIN": "${{ secrets.DEV_DOMAIN }}",
+              "DOMAIN": "${{ secrets.PROD_DOMAIN }}",
               "JUPYTER_HOST": "${{ secrets.JUPYTER_HOST }}",
               "JUPYTER_PORT": "${{ secrets.JUPYTER_PORT }}"
             }
