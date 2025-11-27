@@ -33,6 +33,7 @@ envsubst "\$PLEX_HOST \$PLEX_PORT \$DOMAIN" < /etc/nginx/templates/plex.conf.tem
 envsubst "\$PIHOLE_HOST \$PIHOLE_PORT \$DOMAIN" < /etc/nginx/templates/pihole.conf.template > /etc/nginx/conf.d/pihole.conf
 envsubst "\$PROXMOX_HOST \$PROXMOX_PORT \$DOMAIN" < /etc/nginx/templates/proxmox.conf.template > /etc/nginx/conf.d/proxmox.conf
 envsubst "\$AUTH_SERVICE_HOST \$AUTH_SERVICE_PORT \$DOMAIN" < /etc/nginx/templates/auth-request.conf.template > /etc/nginx/conf.d/auth-request.conf
+envsubst "\$JUPYTER_HOST \$JUPYTER_PORT \$DOMAIN" < /etc/nginx/templates/jupyter.conf.template > /etc/nginx/conf.d/jupyter.conf
 
 echo "Starting nginx"
 
