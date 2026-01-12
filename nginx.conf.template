@@ -38,6 +38,12 @@ http {
         }
     }
 
+    # Backend upstream
+    upstream portfolioBFF {
+        zone portfolioBFF 64k;
+        server ${PORTFOLIOBFF_HOST}:${PORTFOLIOBFF_PORT} resolve;
+    }
+
     # Main server block for www
     server {
         include /etc/nginx/snippets/ssl-common.conf;
@@ -48,6 +54,18 @@ http {
             return 301 https://www.${DOMAIN}/index.html;
         }
 
+        # Forward API calls to backend
+        location /api {
+            proxy_pass http://portfolioBFF;
+            
+            proxy_set_header Host $host;
+
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Forward other traffic to S3 bucket
         location / {
             rewrite ^/(.+)$ /portfolioassets/latest/$1 break;                
                                     
