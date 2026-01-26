@@ -11,7 +11,7 @@ events {
 http {
     access_log  /var/log/nginx/access.log;
 
-    resolver 10.96.0.10 valid=30s;
+    resolver 10.43.0.10 valid=30s;
 
     # HTTP redirect for non-www to www (port 80)
     server {
