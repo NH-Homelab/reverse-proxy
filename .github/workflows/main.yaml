@@ -78,9 +78,11 @@ jobs:
               "JUPYTER_HOST": "${{ secrets.JUPYTER_HOST }}",
               "JUPYTER_PORT": "${{ secrets.JUPYTER_PORT }}",
               "PORTFOLIOBFF_HOST": "${{ secrets.PORTFOLIOBFF_HOST }}",
-              "PORTFOLIOBFF_PORT": "${{ secrets.PORTFOLIOBFF_PORT }}"
+              "PORTFOLIOBFF_PORT": "${{ secrets.PORTFOLIOBFF_PORT }}",
+              "GRAFANA_HOST": "${{ secrets.GRAFANA_HOST }}",      
+              "GRAFANA_PORT": "${{ secrets.GRAFANA_PORT }}"
             }
-
+      
       - name: Deploy to Prod
         uses: ./.github/actions/deploy
         with:
