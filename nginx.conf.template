@@ -45,7 +45,7 @@ http {
         server_name www.${DOMAIN};
 
         location = / {
-            return 301 https://www.${DOMAIN}/index.html;
+            rewrite ^ /index.html last;
         }
 
         location / {
