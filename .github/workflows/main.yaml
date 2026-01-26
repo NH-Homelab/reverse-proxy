@@ -76,7 +76,9 @@ jobs:
               "AUTH_SERVICE_PORT": "${{ secrets.AUTH_SERVICE_PORT }}",
               "DOMAIN": "${{ secrets.PROD_DOMAIN }}",
               "JUPYTER_HOST": "${{ secrets.JUPYTER_HOST }}",
-              "JUPYTER_PORT": "${{ secrets.JUPYTER_PORT }}"
+              "JUPYTER_PORT": "${{ secrets.JUPYTER_PORT }}",
+              "PORTFOLIOBFF_HOST": "${{ secrets.PORTFOLIOBFF_HOST }}",
+              "PORTFOLIOBFF_PORT": "${{ secrets.PORTFOLIOBFF_PORT }}"
             }
 
       - name: Deploy to Prod
