@@ -1,7 +1,7 @@
 user  nginx;
 worker_processes  auto;
 
-error_log  /var/log/nginx/error.log warn;
+error_log  /var/log/nginx/error.log info;
 pid        /var/run/nginx.pid;
 
 events {
@@ -9,33 +9,27 @@ events {
 }
 
 http {
-    access_log  /var/log/nginx/access.log;
+    log_format verbose '$remote_addr - $remote_user [$time_local] '
+                       '"$request" $status $body_bytes_sent '
+                       '"$http_referer" "$http_user_agent" '
+                       '"$http_x_forwarded_for" '
+                       'req_time:$request_time upstream_time:$upstream_response_time '
+                       'upstream_addr:$upstream_addr msec:$msec '
+                       'host:$host scheme:$scheme '
+                       'request_length:$request_length bytes_sent:$body_bytes_sent '
+                       'remote_port:$remote_port server_port:$server_port';
+
+    access_log  /var/log/nginx/access.log verbose;
 
     resolver 10.43.0.10 valid=30s;
 
-    # HTTP redirect for non-www to www (port 80)
-    server {
-        listen 80;
-        server_name ${DOMAIN};
-        return 301 https://www.${DOMAIN}$request_uri;
-    }
-
-    # HTTP redirect for www to HTTPS (port 80)
-    server {
-        listen 80;
-        server_name www.${DOMAIN};
-        return 301 https://www.${DOMAIN}$request_uri;
-    }
-
-    # HTTPS redirect non-www to www (port 443)
+    # Redirect bare domain to www
     server {
         include /etc/nginx/snippets/ssl-common.conf;
 
         server_name ${DOMAIN};
 
-        location / {
-            return 301 https://www.${DOMAIN}$request_uri;
-        }
+        return 301 https://www.${DOMAIN}$request_uri;
     }
 
     # Main server block for www
@@ -63,7 +57,6 @@ http {
         }
 
         location / {
-            # Avoid rewriting when the request already targets the portfolio path
             rewrite ^/(?!portfolioassets/latest/)(.+)$ /portfolioassets/latest/$1 break;
 
             proxy_set_header Host $host;
