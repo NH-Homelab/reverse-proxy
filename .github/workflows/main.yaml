@@ -40,49 +40,9 @@ jobs:
           image-name: ${{ env.IMAGE_NAME }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy-dev:
-    runs-on: dev
-    needs: build
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Create Kubernetes Secret for Dev
-        uses: ./.github/actions/create-k8s-secret
-        with:
-          secret-name: proxy-config-secret
-          namespace: default
-          kubeconfig: ${{ secrets.KUBECONFIG }}
-          secret-vars: |
-            {
-              "MINIO_HOST": "${{ secrets.MINIO_HOST }}",
-              "MINIO_PORT": "${{ secrets.MINIO_PORT }}",
-              "MINIO_S3_PORT": "${{ secrets.MINIO_S3_PORT }}",
-              "PGADMIN_HOST": "${{ secrets.PGADMIN_HOST }}",
-              "PGADMIN_PORT": "${{ secrets.PGADMIN_PORT }}",
-              "PLEX_HOST": "${{ secrets.PLEX_HOST }}",
-              "PLEX_PORT": "${{ secrets.PLEX_PORT }}",
-              "PIHOLE_HOST": "${{ secrets.PIHOLE_HOST }}",
-              "PIHOLE_PORT": "${{ secrets.PIHOLE_PORT }}",
-              "PROXMOX_HOST": "${{ secrets.PROXMOX_HOST }}",
-              "PROXMOX_PORT": "${{ secrets.PROXMOX_PORT }}",
-              "AUTH_SERVICE_HOST": "${{ secrets.AUTH_SERVICE_HOST }}",
-              "AUTH_SERVICE_PORT": "${{ secrets.AUTH_SERVICE_PORT }}",
-              "DOMAIN": "${{ secrets.DEV_DOMAIN }}",
-              "JUPYTER_HOST": "${{ secrets.JUPYTER_HOST }}",
-              "JUPYTER_PORT": "${{ secrets.JUPYTER_PORT }}"
-            }
-
-      - name: Deploy to Dev
-        uses: ./.github/actions/deploy
-        with:
-          environment: prod  # Use prod overlay for dev deployment
-          kubeconfig: ${{ secrets.KUBECONFIG }}
-          image-tag: ${{ needs.build.outputs.sha-tag }}
-
   deploy-prod:
-    runs-on: k8s-runner
-    needs: [build, deploy-dev]
+    runs-on: k8s-prod-k3s
+    needs: [build]
     # Deploy to prod if:
     # 1. Push/merge to main branch, OR
     # 2. Manual workflow dispatch with deploy_to_prod = true
