@@ -18,7 +18,7 @@ env:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: k8s-prod
     outputs:
       image-digest: ${{ steps.build.outputs.image-digest }}
       image-tags: ${{ steps.build.outputs.image-tags }}
@@ -41,7 +41,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-prod:
-    runs-on: k8s-prod-k3s
+    runs-on: k8s-prod
     needs: [build]
     # Deploy to prod if:
     # 1. Push/merge to main branch, OR
