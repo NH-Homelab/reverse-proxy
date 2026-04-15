@@ -79,8 +79,10 @@ jobs:
               "JUPYTER_PORT": "${{ secrets.JUPYTER_PORT }}",
               "PORTFOLIOBFF_HOST": "${{ secrets.PORTFOLIOBFF_HOST }}",
               "PORTFOLIOBFF_PORT": "${{ secrets.PORTFOLIOBFF_PORT }}",
-              "GRAFANA_HOST": "${{ secrets.GRAFANA_HOST }}",      
-              "GRAFANA_PORT": "${{ secrets.GRAFANA_PORT }}"
+              "GRAFANA_HOST": "${{ secrets.GRAFANA_HOST }}",
+              "GRAFANA_PORT": "${{ secrets.GRAFANA_PORT }}",
+              "PORTFOLIO_FRONTEND_HOST": "${{ secrets.PORTFOLIO_FRONTEND_HOST }}",
+              "PORTFOLIO_FRONTEND_PORT": "${{ secrets.PORTFOLIO_FRONTEND_PORT }}"
             }
       
       - name: Deploy to Prod
